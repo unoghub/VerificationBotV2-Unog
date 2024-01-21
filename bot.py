@@ -1,9 +1,7 @@
 import os
 from dotenv import load_dotenv
 import discord
-import discord.ext.commands
-from discord import app_commands
-from discord.utils import get
+import discord.ext.commands 
 from tinydb import TinyDB, Query
 from random import choice
 
@@ -14,8 +12,7 @@ VERIFICATION_CODES_TABLE_NAME = 'verification_codes'
 CATEGORIES_TABLE_NAME = 'categories'
 colors = 0x7ac943, 0x563795, 0x2193c7
 
-client = discord.ext.commands.Bot(command_prefix='!', intents=discord.Intents.all())
-
+client = discord.ext.commands.Bot(command_prefix="/", intents=discord.Intents.all())
 
 @client.event
 async def on_ready():
@@ -26,7 +23,7 @@ async def tree(ctx):
     await client.tree.sync()
 
 @client.hybrid_command(name="register", with_app_command=True, description="Rol almak için kodu giriniz.", aliases=['kayit', 'kayıt', 'onay'])
-@app_commands.describe(verification_code = "Doğrulama kodu girin.")
+@discord.app_commands.describe(verification_code = "Doğrulama kodu girin.")
 async def register(ctx, verification_code: str):
     msg = ctx.message.clean_content
     msg_split = msg.split()
@@ -73,7 +70,7 @@ async def register(ctx, verification_code: str):
 
 
 @client.hybrid_command(name="add_user", with_app_command=True, description="Kayıt için kullanıcı oluştur.")
-@app_commands.describe(nick_name = "Kullanıcı adı girin.", category_name = "Kategori adı girin.", verification_code = "Doğrulama kodu girin.")
+@discord.app_commands.describe(nick_name = "Kullanıcı adı girin.", category_name = "Kategori adı girin.", verification_code = "Doğrulama kodu girin.")
 async def add_user(ctx, nick_name: str, category_name: str, verification_code: str):
     if not is_user_admin(ctx.author):
         return
@@ -100,7 +97,7 @@ async def add_user(ctx, nick_name: str, category_name: str, verification_code: s
 
 
 @client.hybrid_command(name="check_code", with_app_command=True, description="Kod kontrolu.")
-@app_commands.describe(verification_code = "Doğrulama kodu girin.")
+@discord.app_commands.describe(verification_code = "Doğrulama kodu girin.")
 async def check_code(ctx, verification_code: str):
     if not is_user_admin(ctx.author):
         return
@@ -132,7 +129,7 @@ async def check_code(ctx, verification_code: str):
 
 
 @client.hybrid_command(name="clear_usage", with_app_command=True, description="Kod kullanımını sıfırla.")
-@app_commands.describe(verification_code = "Doğrulama kodu girin.")
+@discord.app_commands.describe(verification_code = "Doğrulama kodu girin.")
 async def clear_usage(ctx, verification_code: str):
     if not is_user_admin(ctx.author):
         return
@@ -147,7 +144,7 @@ async def clear_usage(ctx, verification_code: str):
   
 
 @client.hybrid_command(name="add_category", with_app_command=True, description="Kayıt için kategori oluştur.")
-@app_commands.describe(category_name = "Kategori adı girin.", category_roles = "Kategori için rol girin.")
+@discord.app_commands.describe(category_name = "Kategori adı girin.", category_roles = "Kategori için rol girin.")
 async def add_category(ctx, category_name: str, category_roles: discord.Role):
     if not is_user_admin(ctx.author):
         return
@@ -166,7 +163,7 @@ async def add_category(ctx, category_name: str, category_roles: discord.Role):
     await ctx.reply(f'Katagori "{category_name}" tanımlandı.', delete_after=15, ephemeral=True, mention_author=True)
 
 @client.hybrid_command(name="remove_category", with_app_command=True, description="Katergori sil.")
-@app_commands.describe(category_name = "Kategori adı girin.")
+@discord.app_commands.describe(category_name = "Kategori adı girin.")
 async def remove_category(ctx, category_name: str):
     if not is_user_admin(ctx.author):
         return
@@ -191,7 +188,7 @@ async def list_category(ctx):
         roles = category.get('roles').split("+")
         role = ""
         for i in roles:
-            role += (get(ctx.guild.roles, id=int(i))).mention + "\n"
+            role += (discord.utils.get(ctx.guild.roles, id=int(i))).mention + "\n"
         embed.add_field(name=category.get('category_name'), value=role, inline=False)
 
     await ctx.reply(embed=embed, mention_author=True)
@@ -209,15 +206,11 @@ async def apply_category_roles(ctx, user: discord.Member, category: str):
     if categoryData is not None:
         roles = []
         for roleId in categoryData.get('roles').split('+'):
-            role = get(ctx.guild.roles, id=int(roleId))
+            role = discord.utils.get(ctx.guild.roles, id=int(roleId))
             roles.append(role)
         await user.add_roles(*roles)
     else:
         await ctx.reply("Hata kodu 236! Organizatörlere bildirin.", delete_after=10, ephemeral=True, mention_author=True)
-    
-async def _respond(ctx, message, delete: bool = False):
-    sentMsg: discord.Message = await ctx.channel.send(f"<@!{ctx.user.id}>: {message}")
-    if delete:
-        await sentMsg.delete(delay=10)
+
 
 client.run(BOT_TOKEN)
