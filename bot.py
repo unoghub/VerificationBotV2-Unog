@@ -4,14 +4,8 @@ import discord
 import discord.ext.commands
 from discord import app_commands
 from discord.utils import get
-import random
-import logging
 from tinydb import TinyDB, Query
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger('bot')
-
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+from random import choice
 
 load_dotenv()
 BOT_TOKEN = os.getenv('BOT_TOKEN')
@@ -25,7 +19,6 @@ client = discord.ext.commands.Bot(command_prefix='!', intents=discord.Intents.al
 
 @client.event
 async def on_ready():
-    logger.info("Logged in as %s (%s)", client.user.name, client.user.id)
     await client.tree.sync()
 
 @client.command()
@@ -115,7 +108,7 @@ async def check_code(ctx, verification_code: str):
     db = TinyDB(DB_NAME)
     table = db.table(VERIFICATION_CODES_TABLE_NAME)
 
-    embed = discord.Embed(title="Kod kontrolu", color=random.choice(colors), url="https://unog.dev")
+    embed = discord.Embed(title="Kod kontrolu", color=choice(colors), url="https://unog.dev")
     checkingCode = verification_code
     Data = Query()
     verificationData = table.get(Data.code == checkingCode)
@@ -148,7 +141,7 @@ async def clear_usage(ctx, verification_code: str):
     Data = Query()
 
     table.update({'useCount': 0, 'memberId': None}, Data.code == verification_code)
-    embed = discord.Embed(title="Kod kullanımı sıfırlandı.", description=f"Kod: `{verification_code}`\nİsim: `{table.get(Data.code == verification_code).get('nick')}`\nKategori: `{table.get(Data.code == verification_code).get('category')}`", color=random.choice(colors))
+    embed = discord.Embed(title="Kod kullanımı sıfırlandı.", description=f"Kod: `{verification_code}`\nİsim: `{table.get(Data.code == verification_code).get('nick')}`\nKategori: `{table.get(Data.code == verification_code).get('category')}`", color=choice(colors))
     await ctx.reply(embed=embed, mention_author=True)
 
   
@@ -192,7 +185,7 @@ async def remove_category(ctx, category_name: str):
 async def list_category(ctx):
     db = TinyDB(DB_NAME)
     table = db.table(CATEGORIES_TABLE_NAME)
-    embed = discord.Embed(title="Kategoriler", color=random.choice(colors), url="https://unog.dev")
+    embed = discord.Embed(title="Kategoriler", color=choice(colors), url="https://unog.dev")
 
     for category in table.all():
         roles = category.get('roles').split("+")
