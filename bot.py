@@ -124,7 +124,7 @@ async def check_code(ctx, verification_code: str):
         else:
             usageRespond = "Hiç kullanılmamış."
         respondTxt += usageRespond
-    embed.add_field(name=f"**{verificationData.get('category')}**: `{verificationData.get('code')}` ", value=respondTxt, inline=False)
+    embed.add_field(name=f"**{verificationData.get('category')}**: `{verificationData.get('code')}` ", value=f"{verificationData.get('nick')}\n{respondTxt}", inline=False)
     await ctx.reply(embed=embed, mention_author=True)
 
 
@@ -180,6 +180,8 @@ async def remove_category(ctx, category_name: str):
 
 @client.hybrid_command(name="list_category", with_app_command=True, description="Katergorileri listele.")
 async def list_category(ctx):
+    if not is_user_admin(ctx.author):
+        return
     db = TinyDB(DB_NAME)
     table = db.table(CATEGORIES_TABLE_NAME)
     embed = discord.Embed(title="Kategoriler", color=choice(colors), url="https://unog.dev")
@@ -193,6 +195,18 @@ async def list_category(ctx):
 
     await ctx.reply(embed=embed, mention_author=True)
 
+
+@client.command()
+async def clear(ctx, number: int):
+    if not is_user_admin(ctx.author):
+        return
+    deger = number
+    await ctx.reply(f"{deger} mesaj siliniyor..")
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+    await ctx.channel.purge(limit=1 + deger)
 
 def is_user_admin(user: discord.Member):
     return user.guild_permissions.administrator
